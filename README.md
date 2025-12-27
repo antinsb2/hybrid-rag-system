@@ -32,10 +32,10 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design.
 
 ## Plan for next 3-4 weeks
 
-** Document processing and chunking
-** Embedding pipeline and vector indexing
-** Sparse retrieval and hybrid fusion
-** API, benchmarks, optimization
+- **Document processing and chunking
+- **Embedding pipeline and vector indexing
+- **Sparse retrieval and hybrid fusion
+- **API, benchmarks, optimization
 
 ## Quick Start
 ```bash
