@@ -76,3 +76,29 @@ if __name__ == "__main__":
     test_similarity()
     test_model_info()
     print("\n✅ All embedding tests passed!")
+
+def test_cache():
+    """Test embedding cache."""
+    from rag.embeddings import EmbeddingCache
+    import tempfile
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        cache = EmbeddingCache(cache_dir=tmpdir)
+        
+        text = "Test sentence for caching."
+        embedding = np.random.rand(384)
+        
+        # Store in cache
+        cache.put(text, embedding)
+        
+        # Retrieve from cache
+        cached = cache.get(text)
+        assert cached is not None
+        assert np.allclose(cached, embedding)
+        
+        # Check stats
+        stats = cache.get_stats()
+        assert stats['hits'] == 1
+        assert stats['misses'] == 0
+        
+        print(f"✅ Cache test passed: {stats}")
