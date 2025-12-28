@@ -30,12 +30,21 @@ Query → [Dense Search + Sparse Search] → Fusion → Results
 
 See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design.
 
-## Plan for next 3-4 weeks
+## Status
 
-- **Document processing and chunking
-- **Embedding pipeline and vector indexing
-- **Sparse retrieval and hybrid fusion
-- **API, benchmarks, optimization
+**Completed:**
+- Document processing (PDF, DOCX, HTML, TXT, Markdown)
+- Smart chunking strategies
+- Embedding pipeline with caching
+
+**In Progress:**
+- Vector indexing and similarity search
+
+**Planned:**
+- Sparse retrieval (BM25)
+- Hybrid fusion and re-ranking
+- Production API
+
 
 ## Quick Start
 ```bash
