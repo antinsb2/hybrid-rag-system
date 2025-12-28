@@ -102,3 +102,30 @@ def test_cache():
         assert stats['misses'] == 0
         
         print(f"✅ Cache test passed: {stats}")
+
+
+def test_pipeline():
+    """Test complete embedding pipeline."""
+    from rag.embeddings import EmbeddingPipeline
+    import tempfile
+    
+    # Create temp text file
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        f.write("This is a test document. " * 100)
+        temp_path = f.name
+    
+    try:
+        pipeline = EmbeddingPipeline(chunk_size=50, chunk_overlap=10, use_cache=False)
+        chunks = pipeline.process_document(temp_path)
+        
+        assert len(chunks) > 0
+        assert all(hasattr(c, 'text') for c in chunks)
+        assert all(hasattr(c, 'embedding') for c in chunks)
+        assert all(c.embedding.shape[0] == pipeline.model.dimension for c in chunks)
+        
+        print(f"✅ Pipeline test: {len(chunks)} chunks created")
+        print(f"   Stats: {pipeline.get_stats()}")
+        
+    finally:
+        Path(temp_path).unlink()
+
