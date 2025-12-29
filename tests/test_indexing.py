@@ -93,3 +93,56 @@ if __name__ == "__main__":
     test_vector_store_search()
     test_vector_store_persistence()
     print("\n✅ All indexing tests passed!")
+
+
+def test_hnsw_index():
+    """Test HNSW index."""
+    from rag.indexing import HNSWIndex
+    
+    index = HNSWIndex(dimension=384, max_elements=1000)
+    
+    # Add data
+    embeddings = np.random.rand(500, 384)
+    embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+    texts = [f"Document {i}" for i in range(500)]
+    metadata = [{"id": i} for i in range(500)]
+    
+    index.add(embeddings, texts, metadata)
+    
+    # Search
+    query = embeddings[0]
+    results = index.search(query, top_k=10)
+    
+    assert len(results) == 10
+    assert results[0].text == "Document 0"  # Should find itself first
+    
+    print(f"✅ HNSW test: {index.get_stats()}, top score: {results[0].score:.3f}")
+
+
+def test_hnsw_persistence():
+    """Test HNSW save/load."""
+    from rag.indexing import HNSWIndex
+    import tempfile
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        index = HNSWIndex(dimension=384, max_elements=100)
+        
+        embeddings = np.random.rand(50, 384)
+        embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+        texts = [f"Doc {i}" for i in range(50)]
+        metadata = [{"id": i} for i in range(50)]
+        
+        index.add(embeddings, texts, metadata)
+        
+        # Save
+        index.save(tmpdir)
+        
+        # Load
+        new_index = HNSWIndex(dimension=384, max_elements=100)
+        new_index.load(tmpdir)
+        
+        # Test search
+        results = new_index.search(embeddings[0], top_k=5)
+        assert len(results) == 5
+        
+        print("✅ HNSW persistence test passed")
