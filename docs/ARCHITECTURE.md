@@ -87,3 +87,22 @@ Compare performance across:
 - Different fusion strategies
 
 Metrics: nDCG, Recall@K, MRR, latency, cost
+
+### Vector Indexing
+
+**Linear Search (Baseline)**
+- Brute force comparison
+- 100% accurate
+- O(n) complexity
+- Good for <10K vectors
+
+**HNSW (Production)**
+- Graph-based approximate search
+- ~95% recall
+- O(log n) complexity
+- Good for millions of vectors
+- 100x+ faster than linear
+
+**Performance:**
+- Linear: ~10ms for 10K vectors
+- HNSW: ~0.1ms for 1M vectors
