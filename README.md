@@ -39,9 +39,11 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design.
 - Document processing (PDF, DOCX, HTML, TXT, Markdown)
 - Smart chunking strategies
 - Embedding pipeline with caching
+- Vector indexing (Linear and HNSW)
+- Dense retrieval system (end-to-end)
 
 **In Progress:**
-- Vector indexing and similarity search
+- Performance benchmarking and optimization
 
 **Planned:**
 - Sparse retrieval (BM25)
