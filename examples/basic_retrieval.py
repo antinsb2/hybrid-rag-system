@@ -70,8 +70,8 @@ def main():
     print("Pipeline Statistics")
     print("="*60)
     stats = pipeline.get_stats()
-    print(f"Index type: {stats['index']['index_type'] if 'index' in stats else 'None'}")
-    print(f"Indexed vectors: {stats['index']['num_vectors'] if 'index' in stats else 0}")
+    print(f"Index type: {type(pipeline.index).__name__ if pipeline.index else 'None'}")
+    print(f"Indexed vectors: {stats.get('index', {}).get('num_vectors', 0)}")
     print(f"Embedding cache: {stats['embedding_pipeline']['cache']}")
 
 

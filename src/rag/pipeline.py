@@ -14,6 +14,7 @@ from rag.embeddings import EmbeddingPipeline
 from rag.indexing import HNSWIndex
 from rag.retrieval import DenseRetriever, RetrievalResult
 
+import numpy as np
 
 class RAGPipeline:
     """
@@ -64,7 +65,7 @@ class RAGPipeline:
         print(f"Processed {len(embedded_chunks)} chunks")
         
         # Build index
-        embeddings = [chunk.embedding for chunk in embedded_chunks]
+        embeddings = np.array([chunk.embedding for chunk in embedded_chunks])
         texts = [chunk.text for chunk in embedded_chunks]
         metadata = [chunk.metadata for chunk in embedded_chunks]
         
