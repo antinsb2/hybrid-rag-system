@@ -13,11 +13,12 @@ Traditional RAG uses only **dense retrieval** (embeddings). This system combines
 **Why hybrid?** Dense finds semantically similar content, sparse catches exact terms. Together they outperform either alone.
 
 ## Features
-✅ Hybrid search (dense + sparse)
-✅ GPU-accelerated embeddings (150x cache speedup)
-✅ Production caching layer
-✅ Comprehensive benchmarks
-✅ 10ms query latency at 10K documents
+
+- Hybrid search (dense + sparse)
+- GPU-accelerated embeddings (150x cache speedup)
+- Production caching layer
+- Comprehensive benchmarks
+- 10ms query latency at 10K documents
 
 ## Benchmarks
 - Cold start: 1000 docs in 15s
