@@ -56,3 +56,77 @@ if __name__ == "__main__":
     test_batch_processing()
     test_query_expansion()
     print("\n✅ All retrieval tests passed!")
+
+
+def test_dense_retriever():
+    """Test complete dense retrieval."""
+    from rag.retrieval import DenseRetriever
+    from rag.indexing import VectorStore
+    from rag.embeddings import EmbeddingModel
+    
+    # Create test index
+    model = EmbeddingModel()
+    
+    docs = [
+        "Python is a programming language",
+        "Machine learning uses algorithms",
+        "Deep learning is a subset of ML",
+        "Natural language processing",
+        "Computer vision and image recognition"
+    ]
+    
+    embeddings = model.encode(docs)
+    metadata = [{"id": i, "source": f"doc_{i}"} for i in range(len(docs))]
+    
+    store = VectorStore()
+    store.add(embeddings, docs, metadata)
+    
+    # Create retriever
+    retriever = DenseRetriever(store)
+    
+    # Test retrieval
+    query = "What is machine learning?"
+    results = retriever.retrieve(query, top_k=3)
+    
+    assert len(results) == 3
+    assert all(hasattr(r, 'text') for r in results)
+    assert all(hasattr(r, 'score') for r in results)
+    assert all(hasattr(r, 'rank') for r in results)
+    
+    print(f"\n✅ Dense retriever test")
+    print(f"Query: '{query}'")
+    for r in results:
+        print(f"  Rank {r.rank}: {r.text[:50]}... (score: {r.score:.3f})")
+
+
+def test_query_expansion_retrieval():
+    """Test retrieval with query expansion."""
+    from rag.retrieval import DenseRetriever
+    from rag.indexing import VectorStore
+    from rag.embeddings import EmbeddingModel
+    
+    model = EmbeddingModel()
+    
+    docs = [
+        "How to configure SSL certificates",
+        "SSL setup guide for servers",
+        "Security configuration best practices"
+    ]
+    
+    embeddings = model.encode(docs)
+    metadata = [{"id": i} for i in range(len(docs))]
+    
+    store = VectorStore()
+    store.add(embeddings, docs, metadata)
+    
+    # Without expansion
+    retriever_no_exp = DenseRetriever(store, use_query_expansion=False)
+    results_no_exp = retriever_no_exp.retrieve("SSL setup", top_k=2)
+    
+    # With expansion
+    retriever_exp = DenseRetriever(store, use_query_expansion=True)
+    results_exp = retriever_exp.retrieve("SSL setup", top_k=2)
+    
+    print(f"\n✅ Query expansion comparison")
+    print(f"Without expansion: {len(results_no_exp)} results")
+    print(f"With expansion: {len(results_exp)} results")
