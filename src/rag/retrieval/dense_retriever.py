@@ -2,6 +2,7 @@
 Dense retrieval using embeddings.
 """
 
+from .filters import ResultFilter, ResultRanker
 from typing import List, Optional, Union
 from dataclasses import dataclass
 import numpy as np
@@ -115,3 +116,55 @@ class DenseRetriever:
             "index_stats": self.index.get_stats(),
             "query_expansion": self.use_query_expansion
         }
+
+def retrieve_with_filters(
+        self,
+        query: str,
+        top_k: int = 10,
+        min_score: float = 0.0,
+        filter_sources: Optional[List[str]] = None,
+        filter_metadata: Optional[dict] = None,
+        deduplicate: bool = True,
+        boost_metadata: Optional[dict] = None
+    ) -> List[RetrievalResult]:
+        """
+        Retrieve with advanced filtering and ranking.
+        
+        Args:
+            query: User query
+            top_k: Number of initial results to retrieve
+            min_score: Minimum similarity score
+            filter_sources: Only include these sources
+            filter_metadata: Filter by metadata key-value pairs
+            deduplicate: Remove near-duplicates
+            boost_metadata: Boost results matching metadata (key: value, boost_factor)
+            
+        Returns:
+            Filtered and ranked results
+        """
+        # Get initial results (retrieve more than needed for filtering)
+        initial_results = self.retrieve(query, top_k=top_k * 2, min_score=min_score)
+        
+        results = initial_results
+        
+        # Apply filters
+        if filter_sources:
+            results = ResultFilter.by_source(results, filter_sources)
+        
+        if filter_metadata:
+            for key, value in filter_metadata.items():
+                results = ResultFilter.by_metadata(results, key, value)
+        
+        # Deduplicate
+        if deduplicate:
+            results = ResultFilter.deduplicate(results)
+        
+        # Apply boosting
+        if boost_metadata:
+            for key, config in boost_metadata.items():
+                value = config.get('value')
+                factor = config.get('factor', 1.2)
+                results = ResultRanker.boost_by_metadata(results, key, value, factor)
+        
+        # Return top k after filtering
+        return results[:top_k]
