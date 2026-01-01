@@ -137,3 +137,39 @@ class RAGPipeline:
             stats["index"] = self.index.get_stats()
         
         return stats
+
+
+def query_with_filters(
+        self,
+        query: str,
+        top_k: int = 10,
+        min_score: float = 0.0,
+        sources: Optional[List[str]] = None,
+        metadata_filters: Optional[dict] = None,
+        deduplicate: bool = True
+    ) -> List:
+        """
+        Query with filtering options.
+        
+        Args:
+            query: User query
+            top_k: Number of results
+            min_score: Minimum score
+            sources: Filter by sources
+            metadata_filters: Filter by metadata
+            deduplicate: Remove duplicates
+            
+        Returns:
+            Filtered results
+        """
+        if not self.is_indexed:
+            raise RuntimeError("No documents indexed. Call ingest_documents() first.")
+        
+        return self.retriever.retrieve_with_filters(
+            query=query,
+            top_k=top_k,
+            min_score=min_score,
+            filter_sources=sources,
+            filter_metadata=metadata_filters,
+            deduplicate=deduplicate
+        )
