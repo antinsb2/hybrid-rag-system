@@ -86,7 +86,7 @@ def main():
     print("Test 4: Deduplication")
     print("="*60)
     
-    results_with_dup = pipeline.query("Python", top_k=5, deduplicate=False)
+    results_with_dup = pipeline.query("Python", top_k=5)
     results_no_dup = pipeline.query_with_filters("Python", top_k=5, deduplicate=True)
     
     print(f"Without deduplication: {len(results_with_dup)} results")

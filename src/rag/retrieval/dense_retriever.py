@@ -2,6 +2,7 @@
 Dense retrieval using embeddings.
 """
 
+from .types import RetrievalResult
 from .filters import ResultFilter, ResultRanker
 from typing import List, Optional, Union
 from dataclasses import dataclass
@@ -13,16 +14,6 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from rag.indexing import VectorStore, HNSWIndex, SearchResult
 from rag.retrieval.query_processor import QueryProcessor
-
-
-@dataclass
-class RetrievalResult:
-    """Result from retrieval."""
-    text: str
-    score: float
-    metadata: dict
-    rank: int
-
 
 class DenseRetriever:
     """
@@ -117,7 +108,7 @@ class DenseRetriever:
             "query_expansion": self.use_query_expansion
         }
 
-def retrieve_with_filters(
+    def retrieve_with_filters(
         self,
         query: str,
         top_k: int = 10,

@@ -41,10 +41,11 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design.
 - Smart chunking strategies
 - Embedding pipeline with caching
 - Vector indexing (Linear and HNSW)
-- Dense retrieval system (end-to-end)
+- Dense retrieval system
+- Result filtering and ranking
 
 **In Progress:**
-- Performance benchmarking and optimization
+- Performance optimization and benchmarking
 
 **Planned:**
 - Sparse retrieval (BM25)

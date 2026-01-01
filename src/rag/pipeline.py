@@ -138,8 +138,7 @@ class RAGPipeline:
         
         return stats
 
-
-def query_with_filters(
+    def query_with_filters(
         self,
         query: str,
         top_k: int = 10,
@@ -147,7 +146,7 @@ def query_with_filters(
         sources: Optional[List[str]] = None,
         metadata_filters: Optional[dict] = None,
         deduplicate: bool = True
-    ) -> List:
+    ):
         """
         Query with filtering options.
         
