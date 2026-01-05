@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from rag.indexing import VectorStore, HNSWIndex, SearchResult
+from rag.indexing import VectorStore,SearchResult
 from rag.retrieval.query_processor import QueryProcessor
 
 class DenseRetriever:
@@ -22,7 +22,7 @@ class DenseRetriever:
     
     def __init__(
         self,
-        index: Union[VectorStore, HNSWIndex],
+        index: VectorStore,
         use_query_expansion: bool = False
     ):
         """
@@ -65,10 +65,6 @@ class DenseRetriever:
         # Search index
         if isinstance(self.index, VectorStore):
             results = self.index.search(query_embedding, top_k=top_k, min_score=min_score)
-        else:  # HNSWIndex
-            results = self.index.search(query_embedding, top_k=top_k)
-            # Filter by min_score
-            results = [r for r in results if r.score >= min_score]
         
         # Convert to RetrievalResult with rank
         retrieval_results = [
