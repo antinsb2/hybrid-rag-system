@@ -159,3 +159,44 @@ def test_sparse_retriever():
     print(f"Stats: {retriever.get_stats()}")
     for r in results:
         print(f"  Rank {r.rank}: {r.text[:50]}...")
+
+
+def test_hybrid_retriever():
+    """Test hybrid retrieval."""
+    from rag.retrieval import HybridRetriever, DenseRetriever, SparseRetriever
+    from rag.indexing import VectorStore
+    from rag.embeddings import EmbeddingModel
+    
+    docs = [
+        "Python 3.10 new features",
+        "Machine learning with Python",
+        "Deep learning tutorials",
+        "Python programming guide"
+    ]
+    
+    metadata = [{"id": i} for i in range(len(docs))]
+    
+    # Setup dense
+    model = EmbeddingModel()
+    embeddings = model.encode(docs)
+    store = VectorStore()
+    store.add(embeddings, docs, metadata)
+    dense = DenseRetriever(store)
+    
+    # Setup sparse
+    sparse = SparseRetriever()
+    sparse.index(docs, metadata)
+    
+    # Create hybrid
+    hybrid = HybridRetriever(dense, sparse, fusion_method="rrf")
+    
+    # Test
+    results = hybrid.retrieve("Python 3.10", top_k=3)
+    
+    assert len(results) > 0
+    assert results[0].text  # Has content
+    
+    print(f"\n✅ Hybrid retriever test")
+    print(f"Query: 'Python 3.10'")
+    for r in results:
+        print(f"  Rank {r.rank}: {r.text}")
