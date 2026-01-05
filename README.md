@@ -41,15 +41,16 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design.
 - Smart chunking strategies
 - Embedding pipeline with caching
 - Vector indexing (Linear and HNSW)
-- Dense retrieval system
+- Dense retrieval system (semantic search)
+- Sparse retrieval system (BM25 keyword search)
 - Result filtering and ranking
 
 **In Progress:**
-- Performance optimization and benchmarking
+- Hybrid fusion (combining dense + sparse)
 
 **Planned:**
-- Sparse retrieval (BM25)
-- Hybrid fusion and re-ranking
+- Re-ranking with cross-encoder
+- LLM integration for answer generation
 - Production API
 
 
