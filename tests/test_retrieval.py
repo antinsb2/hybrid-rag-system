@@ -130,3 +130,32 @@ def test_query_expansion_retrieval():
     print(f"\n✅ Query expansion comparison")
     print(f"Without expansion: {len(results_no_exp)} results")
     print(f"With expansion: {len(results_exp)} results")
+
+
+def test_sparse_retriever():
+    """Test sparse retrieval."""
+    from rag.retrieval import SparseRetriever
+    
+    retriever = SparseRetriever()
+    
+    docs = [
+        "Python 3.10 features include pattern matching",
+        "Machine learning with Python and TensorFlow",
+        "Java Spring Boot tutorial",
+        "Python data science libraries"
+    ]
+    
+    metadata = [{"id": i, "source": f"doc_{i}"} for i in range(len(docs))]
+    
+    retriever.index(docs, metadata)
+    
+    # Test retrieval
+    results = retriever.retrieve("Python 3.10", top_k=3)
+    
+    assert len(results) > 0
+    assert results[0].text.startswith("Python 3.10")
+    
+    print(f"\n✅ Sparse retriever test")
+    print(f"Stats: {retriever.get_stats()}")
+    for r in results:
+        print(f"  Rank {r.rank}: {r.text[:50]}...")
