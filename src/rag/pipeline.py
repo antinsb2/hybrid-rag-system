@@ -4,6 +4,8 @@ End-to-end RAG pipeline.
 
 from typing import List, Optional
 from pathlib import Path
+from rag.retrieval import HybridRetriever
+from rag.retrieval import SparseRetriever
 
 import sys
 sys.path.append(str(Path(__file__).parent.parent))
@@ -171,4 +173,61 @@ class RAGPipeline:
             filter_sources=sources,
             filter_metadata=metadata_filters,
             deduplicate=deduplicate
+        )
+
+    def enable_hybrid(self, fusion_method: str = "rrf"):
+        """
+        Enable hybrid retrieval (dense + sparse).
+        
+        Args:
+            fusion_method: Fusion strategy ("rrf", "weighted", "simple")
+        """
+        if not self.is_indexed:
+            raise RuntimeError("Must index documents first")
+        
+        # Get texts from existing index
+        if self.use_hnsw:
+            texts = self.index.texts
+            metadata = self.index.metadata
+        else:
+            texts = self.index.texts
+            metadata = self.index.metadata
+        
+        # Create sparse retriever
+        sparse_retriever = SparseRetriever()
+        sparse_retriever.index(texts, metadata)
+        
+        # Create hybrid retriever
+        self.hybrid_retriever = HybridRetriever(
+            self.retriever,
+            sparse_retriever,
+            fusion_method=fusion_method
+        )
+        
+        print(f"✅ Hybrid retrieval enabled with {fusion_method} fusion")
+    
+    def query_hybrid(
+        self,
+        query: str,
+        top_k: int = 10,
+        dense_weight: float = 0.5
+    ):
+        """
+        Query using hybrid retrieval.
+        
+        Args:
+            query: User query
+            top_k: Number of results
+            dense_weight: Weight for dense scores (for weighted fusion)
+            
+        Returns:
+            Hybrid retrieval results
+        """
+        if not hasattr(self, 'hybrid_retriever'):
+            raise RuntimeError("Hybrid retrieval not enabled. Call enable_hybrid() first.")
+        
+        return self.hybrid_retriever.retrieve(
+            query,
+            top_k=top_k,
+            dense_weight=dense_weight
         )
