@@ -63,6 +63,35 @@ Documents → Chunking → Embedding → Indexing
 Query → [Dense Search + Sparse Search] → Fusion → Re-rank → Results → LLM
 ```
 
+## Current Implementation Status
+
+### Retrieval Components (Completed)
+
+**Dense Retrieval:**
+- Sentence transformers for embeddings
+- Vector similarity search (cosine)
+- Linear and HNSW indexing options
+- Query expansion support
+
+**Sparse Retrieval:**
+- BM25 algorithm from scratch
+- Inverted index for efficient term lookup
+- Configurable k1 and b parameters
+- Term frequency analysis
+
+**Hybrid Fusion:**
+- Reciprocal Rank Fusion (RRF)
+- Weighted score combination
+- Simple merge strategy
+- Automatic result deduplication
+
+**Quality Features:**
+- Result filtering (score, source, metadata)
+- Ranking with boosting
+- Deduplication
+- Persistence for all components
+
+
 ## Performance Targets
 - Latency: P95 < 100ms (retrieval only)
 - Throughput: 1000+ queries/sec

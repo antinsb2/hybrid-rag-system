@@ -25,6 +25,31 @@ Traditional RAG uses only **dense retrieval** (embeddings). This system combines
 - Warm queries: <10ms with 85% cache hit rate
 - Throughput: 67 docs/sec (GPU)
 
+
+## Retrieval Methods
+
+### Dense Retrieval
+Uses embeddings for semantic similarity. Finds conceptually related content.
+
+**Good for:** "machine learning" → finds "neural networks", "AI algorithms"
+
+### Sparse Retrieval (BM25)
+Uses keyword matching with TF-IDF weighting. Finds exact term matches.
+
+**Good for:** "Python 3.10" → finds exact version, "175 billion" → finds exact numbers
+
+### Hybrid Retrieval
+Combines both approaches using fusion algorithms.
+
+**Fusion strategies:**
+- **RRF (Reciprocal Rank Fusion)**: Combines rankings, works when scores aren't comparable
+- **Weighted**: Combines normalized scores with configurable weights
+- **Simple**: Merges results, prioritizes dense
+
+**Result:** Better than either method alone, especially for mixed queries.
+
+
+
 ## Architecture
 ```
 Documents → Processing → [Dense Index + Sparse Index]
@@ -40,19 +65,19 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design.
 - Document processing (PDF, DOCX, HTML, TXT, Markdown)
 - Smart chunking strategies
 - Embedding pipeline with caching
-- Vector indexing (Linear and HNSW)
+- Vector indexing (Linear search)
 - Dense retrieval system (semantic search)
 - Sparse retrieval system (BM25 keyword search)
+- Hybrid fusion (RRF, weighted, simple)
 - Result filtering and ranking
 
 **In Progress:**
-- Hybrid fusion (combining dense + sparse)
+- Comprehensive benchmarking
 
 **Planned:**
 - Re-ranking with cross-encoder
 - LLM integration for answer generation
-- Production API
-
+- Production API with observability
 
 ## Quick Start
 ```bash
