@@ -6,6 +6,7 @@ from typing import List, Optional
 from pathlib import Path
 from rag.retrieval import HybridRetriever
 from rag.retrieval import SparseRetriever
+from rag.retrieval import CrossEncoderReranker, TwoStageRetrieval
 
 import sys
 sys.path.append(str(Path(__file__).parent.parent))
@@ -231,3 +232,48 @@ class RAGPipeline:
             top_k=top_k,
             dense_weight=dense_weight
         )
+
+    def enable_reranking(self, model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"):
+        """
+        Enable cross-encoder re-ranking.
+        
+        Args:
+            model_name: Cross-encoder model to use
+        """
+        if not self.is_indexed:
+            raise RuntimeError("Must index documents first")
+        
+        self.reranker = CrossEncoderReranker(model_name)
+        print(f"✅ Re-ranking enabled with {model_name}")
+    
+    
+    def query_with_rerank(
+        self,
+        query: str,
+        top_k: int = 10,
+        candidates_k: int = 50
+    ):
+        """
+        Query with two-stage retrieval: fast retrieval + re-ranking.
+        
+        Args:
+            query: User query
+            top_k: Final number of results after re-ranking
+            candidates_k: Number of candidates to retrieve before re-ranking
+            
+        Returns:
+            Re-ranked results
+        """
+        if not hasattr(self, 'reranker'):
+            raise RuntimeError("Re-ranking not enabled. Call enable_reranking() first.")
+        
+        # Get candidates (more than needed)
+        if hasattr(self, 'hybrid_retriever'):
+            candidates = self.hybrid_retriever.retrieve(query, top_k=candidates_k)
+        else:
+            candidates = self.retriever.retrieve(query, top_k=candidates_k)
+        
+        # Re-rank
+        reranked = self.reranker.rerank(query, candidates, top_k=top_k)
+        
+        return reranked
