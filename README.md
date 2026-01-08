@@ -127,6 +127,12 @@ python examples/query.py "your question here"
 
 Coming soon: Comprehensive comparison of retrieval strategies.
 
+## Disclaimer
+   This is a personal educational project for learning AI/ML fundamentals. 
+   All code is original work based on publicly available research papers and tutorials.
+   No proprietary or confidential information from any employer is included.
+
+
 ---
 
 *Part of year-long AI systems engineering deep dive*
