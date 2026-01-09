@@ -74,6 +74,24 @@ System performance measured on 1000-document corpus:
 See [benchmarks/](benchmarks/) for detailed analysis.
 
 
+## Re-ranking
+
+Two-stage retrieval for improved quality:
+
+1. **Stage 1 (Fast):** Retrieve 50 candidates using hybrid search
+2. **Stage 2 (Accurate):** Re-rank with cross-encoder
+
+**Quality Improvement:**
+- P@3 increases by 10-30%
+- Better handling of ambiguous queries
+- More accurate relevance scoring
+
+**Latency Trade-off:**
+- Adds ~50-100ms per query
+- Worth it for quality-critical applications
+- Can be disabled for speed-critical use cases
+
+
 ## Architecture
 ```
 Documents → Processing → [Dense Index + Sparse Index]
@@ -93,16 +111,17 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design.
 - Dense retrieval system (semantic search)
 - Sparse retrieval system (BM25 keyword search)
 - Hybrid fusion (RRF, weighted, simple)
+- Cross-encoder re-ranking
 - Result filtering and ranking
 - Comprehensive benchmarking suite
 
 **In Progress:**
-- Performance optimization
+- System optimization
 
 **Planned:**
-- Re-ranking with cross-encoder
 - LLM integration for answer generation
 - Production API with observability
+- Final polish and deployment guides
 
 
 ## Quick Start
@@ -134,6 +153,3 @@ Coming soon: Comprehensive comparison of retrieval strategies.
 
 
 ---
-
-*Part of year-long AI systems engineering deep dive*
-*Focus: Production systems with real metrics*
