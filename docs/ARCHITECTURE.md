@@ -135,3 +135,31 @@ Metrics: nDCG, Recall@K, MRR, latency, cost
 **Performance:**
 - Linear: ~10ms for 10K vectors
 - HNSW: ~0.1ms for 1M vectors
+
+- ## Re-ranking Stage
+
+**Cross-Encoder Re-ranking:**
+- Uses `cross-encoder/ms-marco-MiniLM-L-6-v2`
+- Jointly encodes query + document (more accurate than bi-encoder)
+- Applied to top-50 candidates from hybrid retrieval
+- Returns top-10 after re-scoring
+
+**Two-Stage Pipeline:**
+```
+Query → Hybrid Retrieval (50 candidates) → Cross-Encoder Re-rank (10 results)
+```
+
+**Performance:**
+- Quality: 10-30% better P@3
+- Latency: +50-100ms overhead
+- Memory: Minimal (model loaded once)
+
+**When to use:**
+- Quality matters more than speed
+- Small result sets (top-10)
+- User-facing search (better UX)
+
+**When to skip:**
+- High-throughput scenarios
+- Large result sets (top-100+)
+- Latency-critical applications
