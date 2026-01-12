@@ -91,6 +91,40 @@ Two-stage retrieval for improved quality:
 - Worth it for quality-critical applications
 - Can be disabled for speed-critical use cases
 
+## Complete RAG Flow
+
+End-to-end question answering:
+```python
+from rag.pipeline import RAGPipeline
+
+# Setup
+pipeline = RAGPipeline()
+pipeline.ingest_documents(['doc1.pdf', 'doc2.txt'])
+pipeline.enable_hybrid(fusion_method="rrf")
+pipeline.enable_generation(use_mock=True)
+
+# Ask questions
+result = pipeline.ask("How do I configure SSL?")
+
+print(result["answer"])
+print(f"Sources: {result['num_chunks']} chunks used")
+```
+
+**Full Pipeline:**
+1. Load and chunk documents
+2. Generate embeddings (with caching)
+3. Index for fast search (dense + sparse)
+4. Retrieve relevant chunks (hybrid fusion)
+5. Re-rank for quality (optional cross-encoder)
+6. Generate answer with LLM
+7. Return answer with source citations
+
+**Quality Features:**
+- Hybrid retrieval: 10-15% better recall
+- Re-ranking: 10-30% better precision
+- Source attribution for transparency
+- Configurable at each stage
+
 
 ## Architecture
 ```
@@ -113,16 +147,17 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design.
 - Hybrid fusion (RRF, weighted, simple)
 - Cross-encoder re-ranking
 - Result filtering and ranking
+- LLM integration for answer generation
+- Complete RAG pipeline (end-to-end)
 - Comprehensive benchmarking suite
 
 **In Progress:**
-- System optimization
+- Production API development
 
 **Planned:**
-- LLM integration for answer generation
-- Production API with observability
-- Final polish and deployment guides
-
+- API observability and monitoring
+- Deployment guides
+- Final optimization and polish
 
 ## Quick Start
 ```bash

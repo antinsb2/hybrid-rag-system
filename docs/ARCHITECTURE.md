@@ -163,3 +163,37 @@ Query → Hybrid Retrieval (50 candidates) → Cross-Encoder Re-rank (10 results
 - High-throughput scenarios
 - Large result sets (top-100+)
 - Latency-critical applications
+
+## Answer Generation
+
+**LLM Integration:**
+- Support for OpenAI (GPT) and Anthropic (Claude)
+- Mock LLM for testing without API costs
+- Context-aware prompt construction
+- Source citation generation
+
+**RAG Generator:**
+- Combines retrieval with generation
+- Filters low-relevance chunks (min_score threshold)
+- Limits context to top-k most relevant
+- Returns structured response with sources
+
+**Complete Flow:**
+```
+User Question
+    ↓
+Hybrid Retrieval (dense + sparse + fusion)
+    ↓
+Optional Re-ranking (cross-encoder)
+    ↓
+Context Assembly (top-k chunks)
+    ↓
+Prompt Construction (question + context)
+    ↓
+LLM Generation
+    ↓
+Answer + Sources
+```
+
+**Implementation Complete:**
+All core RAG components functional. System can answer questions using document knowledge base.
