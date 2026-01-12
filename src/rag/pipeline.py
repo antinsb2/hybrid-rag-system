@@ -7,6 +7,8 @@ from pathlib import Path
 from rag.retrieval import HybridRetriever
 from rag.retrieval import SparseRetriever
 from rag.retrieval import CrossEncoderReranker, TwoStageRetrieval
+from rag.generation import MockLLM, RAGGenerator
+
 
 import sys
 sys.path.append(str(Path(__file__).parent.parent))
@@ -277,3 +279,87 @@ class RAGPipeline:
         reranked = self.reranker.rerank(query, candidates, top_k=top_k)
         
         return reranked
+
+    def enable_generation(
+        self,
+        use_mock: bool = True,
+        provider: str = "openai",
+        model: str = None,
+        api_key: str = None
+    ):
+        """
+        Enable answer generation with LLM.
+        
+        Args:
+            use_mock: Use mock LLM (no API costs)
+            provider: "openai" or "anthropic"
+            model: Model name
+            api_key: API key
+        """
+        if not self.is_indexed:
+            raise RuntimeError("Must index documents first")
+        
+        # Create LLM
+        if use_mock:
+            llm = MockLLM()
+            print("✅ Generation enabled with MockLLM")
+        else:
+            from rag.generation import LLMClient
+            llm = LLMClient(provider=provider, model=model, api_key=api_key)
+            print(f"✅ Generation enabled with {provider}")
+        
+        # Determine which retriever to use
+        if hasattr(self, 'hybrid_retriever'):
+            retriever = self.hybrid_retriever
+        else:
+            retriever = self.retriever
+        
+        # Create generator
+        self.generator = RAGGenerator(retriever, llm)
+    
+    def ask(
+        self,
+        question: str,
+        top_k: int = 5,
+        include_sources: bool = True
+    ) -> dict:
+        """
+        Ask a question and get an answer.
+        
+        Args:
+            question: User question
+            top_k: Number of context chunks
+            include_sources: Include source information
+            
+        Returns:
+            Dict with answer and sources
+        """
+        if not hasattr(self, 'generator'):
+            raise RuntimeError("Generation not enabled. Call enable_generation() first.")
+        
+        result = self.generator.generate_answer(question, top_k=top_k)
+        
+        if not include_sources:
+            result.pop("sources", None)
+        
+        return result
+    
+    def ask_with_citations(
+        self,
+        question: str,
+        top_k: int = 5
+    ) -> dict:
+        """
+        Ask question and get answer with inline citations.
+        
+        Args:
+            question: User question
+            top_k: Number of context chunks
+            
+        Returns:
+            Dict with cited answer and sources
+        """
+        if not hasattr(self, 'generator'):
+            raise RuntimeError("Generation not enabled. Call enable_generation() first.")
+        
+        return self.generator.generate_with_citations(question, top_k=top_k)
