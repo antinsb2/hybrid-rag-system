@@ -126,6 +126,37 @@ print(f"Sources: {result['num_chunks']} chunks used")
 - Configurable at each stage
 
 
+## API Usage
+
+Start the server:
+```bash
+python run_server.py
+```
+
+Query the API:
+```python
+import requests
+
+response = requests.post("http://localhost:8000/query", json={
+    "query": "How do I use Flask?",
+    "top_k": 5
+})
+
+result = response.json()
+print(result["answer"])
+```
+
+See [docs/API.md](docs/API.md) for complete API documentation.
+
+## Endpoints
+
+- `GET /health` - Health check
+- `GET /stats` - System statistics
+- `POST /ingest` - Ingest documents
+- `POST /query` - Ask questions
+- `POST /query/retrieve-only` - Retrieve without generation
+
+
 ## Architecture
 ```
 Documents → Processing → [Dense Index + Sparse Index]
@@ -146,18 +177,16 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design.
 - Sparse retrieval system (BM25 keyword search)
 - Hybrid fusion (RRF, weighted, simple)
 - Cross-encoder re-ranking
-- Result filtering and ranking
 - LLM integration for answer generation
 - Complete RAG pipeline (end-to-end)
+- Production REST API
 - Comprehensive benchmarking suite
 
-**In Progress:**
-- Production API development
-
 **Planned:**
-- API observability and monitoring
+- API observability (metrics, logging)
 - Deployment guides
 - Final optimization and polish
+
 
 ## Quick Start
 ```bash
