@@ -43,6 +43,52 @@ System statistics.
 }
 ```
 
+### GET /metrics
+
+System metrics and performance data.
+
+**Response:**
+```json
+{
+  "uptime_seconds": 3600,
+  "total_requests": 1250,
+  "requests_by_endpoint": {
+    "/query": 800,
+    "/health": 400,
+    "/stats": 50
+  },
+  "total_queries": 800,
+  "total_errors": 5,
+  "query_latency": {
+    "avg_ms": 45.2,
+    "p50_ms": 38.5,
+    "p95_ms": 89.3,
+    "p99_ms": 125.7
+  },
+  "cache": {
+    "hits": 320,
+    "misses": 480,
+    "hit_rate": 0.4
+  }
+}
+```
+
+### GET /metrics/detailed
+
+Detailed metrics with calculated rates.
+
+**Response:**
+```json
+{
+  // ... all metrics from /metrics, plus:
+  "requests_per_minute": 20.8,
+  "error_rate": 0.004,
+  "avg_chunks_per_query": 4.2
+}
+```
+
+
+
 ### POST /ingest
 
 Ingest documents into the system.

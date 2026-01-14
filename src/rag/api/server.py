@@ -94,6 +94,22 @@ async def get_metrics():
     return metrics.get_summary()
 
 
+@app.get("/metrics/detailed")
+async def get_detailed_metrics():
+    """Get detailed metrics with charts data."""
+    summary = metrics.get_summary()
+    
+    # Add additional details
+    detailed = {
+        **summary,
+        "requests_per_minute": metrics.total_requests / (summary["uptime_seconds"] / 60) if summary["uptime_seconds"] > 0 else 0,
+        "error_rate": metrics.total_errors / metrics.total_requests if metrics.total_requests > 0 else 0,
+        "avg_chunks_per_query": summary.get("total_retrievals", 0) / summary.get("total_queries", 1) if summary.get("total_queries", 0) > 0 else 0
+    }
+    
+    return detailed
+
+
 @app.post("/ingest")
 async def ingest_documents(request: IngestRequest, background_tasks: BackgroundTasks):
     """
@@ -212,6 +228,8 @@ async def root():
         "endpoints": {
             "health": "/health",
             "stats": "/stats",
+            "metrics": "/metrics",
+            "metrics_detailed": "/metrics/detailed",
             "ingest": "POST /ingest",
             "query": "POST /query",
             "retrieve_only": "POST /query/retrieve-only"
