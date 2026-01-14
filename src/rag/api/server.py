@@ -2,6 +2,11 @@
 FastAPI server for RAG system.
 """
 
+
+from rag.api.logging_config import logger
+from rag.api.middleware import RequestLoggingMiddleware
+from rag.api.metrics import metrics
+import time
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 import sys
@@ -36,12 +41,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.add_middleware(RequestLoggingMiddleware)
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize pipeline on startup."""
     global pipeline
+    logger.info("Starting RAG API server...")
     pipeline = RAGPipeline(chunk_size=512, use_hnsw=False)
     print("✅ RAG Pipeline initialized")
 
@@ -82,6 +88,11 @@ async def get_stats():
         cache_stats=stats.get("embedding_pipeline", {}).get("cache")
     )
 
+@app.get("/metrics")
+async def get_metrics():
+    """Get API metrics."""
+    return metrics.get_summary()
+
 
 @app.post("/ingest")
 async def ingest_documents(request: IngestRequest, background_tasks: BackgroundTasks):
@@ -115,6 +126,10 @@ async def query(request: QueryRequest):
     """
     Query the RAG system.
     """
+
+    metrics.record_request("/query")
+    start_time = time.time()
+
     if not pipeline:
         raise HTTPException(status_code=500, detail="Pipeline not initialized")
     
@@ -142,6 +157,7 @@ async def query(request: QueryRequest):
             for s in result["sources"]
         ]
         
+    metrics.record_query(time.time() - start_time)
         return QueryResponse(
             answer=result["answer"],
             sources=sources,
@@ -150,8 +166,9 @@ async def query(request: QueryRequest):
         )
     
     except Exception as e:
+        metrics.record_error(type(e).__name__)
+        logger.error(f"Query error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/query/retrieve-only")
 async def retrieve_only(request: QueryRequest):
