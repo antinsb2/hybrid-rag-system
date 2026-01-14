@@ -157,7 +157,7 @@ async def query(request: QueryRequest):
             for s in result["sources"]
         ]
         
-    metrics.record_query(time.time() - start_time)
+        metrics.record_query(time.time() - start_time)
         return QueryResponse(
             answer=result["answer"],
             sources=sources,
