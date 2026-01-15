@@ -22,6 +22,8 @@ from rag.api.models import (
     HealthResponse,
     StatsResponse
 )
+from rag.api.error_handling import validate_query, handle_file_errors, logger
+
 
 # Global pipeline instance
 pipeline = None
@@ -112,55 +114,62 @@ async def get_detailed_metrics():
 
 @app.post("/ingest")
 async def ingest_documents(request: IngestRequest, background_tasks: BackgroundTasks):
-    """
-    Ingest documents into the system.
-    """
+    """Ingest documents into the system."""
+    
     if not pipeline:
         raise HTTPException(status_code=500, detail="Pipeline not initialized")
     
-    # Validate files exist
+    # Validate all files first
     for file_path in request.file_paths:
-        if not Path(file_path).exists():
-            raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
+        try:
+            handle_file_errors(file_path)
+        except (FileNotFoundError, PermissionError, ValueError) as e:
+            raise HTTPException(status_code=400, detail=str(e))
     
     # Ingest in background
     def ingest_task():
-        pipeline.ingest_documents(request.file_paths, show_progress=False)
-        pipeline.enable_hybrid(fusion_method="rrf")
-        pipeline.enable_generation(use_mock=True)
+        try:
+            logger.info(f"Starting ingestion of {len(request.file_paths)} documents")
+            pipeline.ingest_documents(request.file_paths, show_progress=False)
+            pipeline.enable_hybrid(fusion_method="rrf")
+            pipeline.enable_generation(use_mock=True)
+            logger.info("✅ Ingestion complete")
+        except Exception as e:
+            logger.error(f"Ingestion failed: {str(e)}", exc_info=True)
     
     background_tasks.add_task(ingest_task)
     
     return {
         "message": f"Ingesting {len(request.file_paths)} documents",
+        "files": request.file_paths,
         "status": "processing"
     }
 
-
 @app.post("/query", response_model=QueryResponse)
 async def query(request: QueryRequest):
-    """
-    Query the RAG system.
-    """
-
+    """Query the RAG system."""
+    
     metrics.record_request("/query")
     start_time = time.time()
-
+    
+    # Validate query
+    try:
+        validated_query = validate_query(request.query)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
     if not pipeline:
         raise HTTPException(status_code=500, detail="Pipeline not initialized")
     
     if not pipeline.is_indexed:
-        raise HTTPException(status_code=400, detail="No documents indexed")
+        raise HTTPException(status_code=400, detail="No documents indexed. Use /ingest first.")
     
     if not hasattr(pipeline, 'generator'):
         raise HTTPException(status_code=400, detail="Generation not enabled")
     
     try:
         # Generate answer
-        result = pipeline.ask(
-            request.query,
-            top_k=request.top_k
-        )
+        result = pipeline.ask(validated_query, top_k=request.top_k)
         
         # Convert to response model
         sources = [
@@ -174,17 +183,19 @@ async def query(request: QueryRequest):
         ]
         
         metrics.record_query(time.time() - start_time)
+        
         return QueryResponse(
             answer=result["answer"],
             sources=sources,
             num_chunks=result["num_chunks"],
-            query=request.query
+            query=validated_query
         )
     
     except Exception as e:
         metrics.record_error(type(e).__name__)
-        logger.error(f"Query error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Query error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
+
 
 @app.post("/query/retrieve-only")
 async def retrieve_only(request: QueryRequest):
