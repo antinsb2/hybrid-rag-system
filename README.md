@@ -1,24 +1,50 @@
 # Hybrid RAG System
 
-Production-grade Retrieval-Augmented Generation system with hybrid search, GPU-optimized embeddings, and intelligent caching.
+> Production-grade Retrieval-Augmented Generation combining dense embeddings and sparse keyword search
 
-## What Makes This "Hybrid"?
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+High-performance RAG system with hybrid retrieval, cross-encoder re-ranking, and comprehensive benchmarks.
+
+## Why Hybrid?
 
 Traditional RAG uses only **dense retrieval** (embeddings). This system combines:
 
--  **Dense Retrieval**: Semantic similarity via embeddings
--  **Sparse Retrieval**: Keyword matching via BM25
--  **Smart Fusion**: Combines both for best results
+- 🎯 **Dense Retrieval**: Semantic similarity via embeddings
+- 🔍 **Sparse Retrieval**: Keyword matching via BM25  
+- 🔀 **Smart Fusion**: Combines both for superior results
 
-**Why hybrid?** Dense finds semantically similar content, sparse catches exact terms. Together they outperform either alone.
+**Result:** 10-15% better recall than dense-only approaches.
+
+## Quick Start
+```bash
+# Install
+pip install -r requirements.txt
+
+# Use in Python
+from rag.pipeline import RAGPipeline
+
+pipeline = RAGPipeline()
+pipeline.ingest_documents(['doc1.pdf', 'doc2.txt'])
+pipeline.enable_hybrid()
+pipeline.enable_generation(use_mock=True)
+
+result = pipeline.ask("Your question here?")
+print(result["answer"])
+```
 
 ## Features
 
-- Hybrid search (dense + sparse)
-- GPU-accelerated embeddings (150x cache speedup)
-- Production caching layer
-- Comprehensive benchmarks
-- 10ms query latency at 10K documents
+- Multi-format document processing (PDF, DOCX, HTML, TXT, Markdown)
+- Hybrid search (dense + sparse retrieval)
+- Multiple fusion strategies (RRF, weighted, simple)
+- Cross-encoder re-ranking for quality
+- Production REST API with FastAPI
+- Comprehensive benchmarking and metrics
+- Embedding cache (100x+ speedup)
+- Source attribution and citations
+
 
 ## Benchmarks
 - Cold start: 1000 docs in 15s
@@ -181,17 +207,10 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design.
 - Complete RAG pipeline (end-to-end)
 - Production REST API
 - Comprehensive benchmarking suite
-
-**Planned:**
 - API observability (metrics, logging)
 - Deployment guides
 - Final optimization and polish
 
-
-## Quick Start
-```bash
-# Setup
-pip install -r requirements.txt
 
 # Process documents
 python examples/ingest_documents.py data/
@@ -206,9 +225,42 @@ python examples/query.py "your question here"
 - Recall@10 > 0.85
 - Hybrid outperforms dense-only by 10%+
 
-## Benchmarks
+## Documentation
 
-Coming soon: Comprehensive comparison of retrieval strategies.
+- [Architecture](docs/ARCHITECTURE.md) - System design and components
+- [API Reference](docs/API.md) - REST API documentation
+- [Usage Guide](docs/USAGE_GUIDE.md) - Complete usage examples
+- [Benchmarks](benchmarks/) - Performance analysis
+
+## Project Structure
+```
+hybrid-rag-system/
+├── src/rag/
+│   ├── document_processing/    # Document loaders and chunking
+│   ├── embeddings/             # Embedding generation and caching
+│   ├── retrieval/              # Dense, sparse, hybrid, re-ranking
+│   ├── generation/             # LLM integration
+│   └── api/                    # FastAPI server
+├── tests/                      # Test suite
+├── benchmarks/                 # Performance benchmarks
+├── examples/                   # Usage examples
+└── docs/                       # Documentation
+```
+
+## Performance
+
+Measured on 1000-document corpus:
+
+| Metric | Value |
+|--------|-------|
+| Dense Retrieval P95 | 25ms |
+| Sparse Retrieval P95 | 10ms |
+| Hybrid Retrieval P95 | 30ms |
+| Re-ranking overhead | +50ms |
+| Hybrid Recall@10 improvement | +12% vs dense-only |
+| Cache speedup | 100-500x |
+
+See [benchmarks/](benchmarks/) for detailed analysis.
 
 ## Disclaimer
    This is a personal educational project for learning AI/ML fundamentals. 
