@@ -8,3 +8,7 @@ data/*.pdf
 data/*.docx
 .pytest_cache/
 *.log
+logs/
+.cache/
+*.pkl
+PERFORMANCE_REPORT.md
