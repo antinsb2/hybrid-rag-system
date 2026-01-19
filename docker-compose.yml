@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  rag-api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./.cache:/app/.cache
+    environment:
+      - LOG_LEVEL=INFO
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+```
+
+Create `.dockerignore`:
+```
+venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+*.md
+tests/
+benchmarks/
+examples/
+notebooks/
+.DS_Store
+*.log
+.pytest_cache/
