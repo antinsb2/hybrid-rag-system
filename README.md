@@ -34,6 +34,32 @@ result = pipeline.ask("Your question here?")
 print(result["answer"])
 ```
 
+## Testing
+
+Run all tests:
+```bash
+cd tests
+python run_all_tests.py
+```
+
+Run specific tests:
+```bash
+python tests/test_integration.py
+python tests/test_api.py
+```
+
+Test coverage includes:
+- Document loading and chunking
+- Embedding generation and caching
+- Vector indexing (linear search)
+- Dense and sparse retrieval
+- Hybrid fusion algorithms
+- Re-ranking with cross-encoder
+- Answer generation
+- API endpoints
+- Error handling
+
+
 ## Features
 
 - Multi-format document processing (PDF, DOCX, HTML, TXT, Markdown)
