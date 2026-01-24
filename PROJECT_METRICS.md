@@ -14,24 +14,27 @@ Quantitative summary of the Hybrid RAG System implementation.
 
 ## Code Statistics
 
-**Lines of Code:**
-- Source code: ~2,500 lines
-- Tests: ~1,200 lines
-- Documentation: ~1,500 lines
-- Total: ~5,200 lines
+**Production Code:**
+- Total lines: ~3,000
+- Modules: 22
+- Classes: 25+
+- Functions: 100+
 
-**Modules:**
-- Document processing: 3 modules
-- Embeddings: 3 modules
-- Retrieval: 8 modules
-- Generation: 3 modules
-- API: 5 modules
-- Total: 22 production modules
+**Test Code:**
+- Test files: 13
+- Test functions: 55+
+- Coverage: Core components tested
 
-**Test Coverage:**
-- 13 test files
-- 50+ test functions
-- Coverage areas: loaders, chunking, embeddings, indexing, retrieval, fusion, re-ranking, generation, API
+**Documentation:**
+- Markdown files: 8
+- Total doc lines: ~2,000
+- Guides: 5 comprehensive guides
+
+**Examples:**
+- Example scripts: 12
+- Benchmark scripts: 6
+
+**Total Project Size:** ~6,500 lines across all files
 
 ## Performance Metrics
 
