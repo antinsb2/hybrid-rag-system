@@ -14,7 +14,6 @@ from rag.pipeline import RAGPipeline
 # Initialize
 pipeline = RAGPipeline()
 
-
 # Index documents
 pipeline.ingest_documents(['doc1.pdf', 'doc2.txt'])
 
