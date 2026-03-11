@@ -1,199 +1,61 @@
-# Hybrid RAG System Architecture
-
-## Overview
-Production-grade Retrieval-Augmented Generation system combining dense and sparse retrieval methods for superior search quality.
-
-## What is Hybrid RAG?
-
-**Hybrid = Dense + Sparse Retrieval**
-
-- **Dense Retrieval**: Uses embeddings for semantic similarity
-  - Finds conceptually similar content
-  - Example: "ML model" matches "neural network"
-  - Tech: Sentence transformers, vector similarity
-
-- **Sparse Retrieval**: Uses keyword matching (BM25)
-  - Finds exact term matches
-  - Example: "Python 3.10" matches exact phrase
-  - Tech: BM25 algorithm, inverted index
-
-- **Hybrid**: Combines both for best results
-  - Dense catches semantic matches
-  - Sparse catches exact terms
-  - Fusion algorithm merges results
-
-## System Components
-
-### 1. Document Processing
-- Multi-format support (PDF, DOCX, HTML, Markdown, TXT)
-- Metadata extraction (author, date, source)
-- Smart chunking strategies:
-  - Token-based chunking with overlap
-  - Sentence-aware chunking
-  - Structure-aware (preserve headers, lists)
-
-### 2. Embedding Pipeline
-- Sentence transformers for dense retrieval
-- Fine-tuning on domain data
-- Batch processing with rate limiting
-- Embedding cache for performance
-
-### 3. Hybrid Search Engine
-- **Dense retrieval**: Embedding similarity search
-- **Sparse retrieval**: BM25 term matching
-- Re-ranking with cross-encoder
-- Fusion strategies (RRF, weighted)
-
-### 4. Vector Store
-- Custom HNSW implementation
-- Qdrant integration for comparison
-- Metadata filtering
-- Persistence and versioning
-
-### 5. API Layer
-- FastAPI endpoints
-- Streaming responses
-- Rate limiting
-- Observability (metrics, logging)
+# Architecture
 
 ## Data Flow
+
 ```
 Documents → Chunking → Embedding → Indexing
                 ↓
-Query → [Dense Search + Sparse Search] → Fusion → Re-rank → Results → LLM
+Query → [Dense Search + Sparse Search] → Fusion → Re-rank → LLM → Answer
 ```
 
-## Current Implementation Status
+---
 
-### Retrieval Components (Completed)
+## Components
 
-**Dense Retrieval:**
-- Sentence transformers for embeddings
-- Vector similarity search (cosine)
-- Linear and HNSW indexing options
-- Query expansion support
+### Document Processing
+- Multi-format loaders: PDF, DOCX, HTML, Markdown, TXT
+- Token-based chunking with overlap (default: 512 tokens, 50 overlap)
+- Metadata extraction (source, author, date)
 
-**Sparse Retrieval:**
-- BM25 algorithm from scratch
-- Inverted index for efficient term lookup
-- Configurable k1 and b parameters
-- Term frequency analysis
+### Embedding Pipeline
+- Sentence Transformers (default: `all-MiniLM-L6-v2`)
+- Batch processing
+- Disk-based embedding cache
 
-**Hybrid Fusion:**
-- Reciprocal Rank Fusion (RRF)
-- Weighted score combination
-- Simple merge strategy
-- Automatic result deduplication
+### Retrieval
 
-**Quality Features:**
-- Result filtering (score, source, metadata)
-- Ranking with boosting
-- Deduplication
-- Persistence for all components
+**Dense** — cosine similarity over embeddings. Finds semantically similar content even with different wording.
 
+**Sparse** — BM25 keyword matching. Finds exact terms, version numbers, specific identifiers.
 
-## Performance Targets
-- Latency: P95 < 100ms (retrieval only)
-- Throughput: 1000+ queries/sec
-- Recall@10: > 0.85 (hybrid should beat pure dense)
-- Cost: < $0.01 per 1000 queries
+**Hybrid** — runs both, merges results via fusion. Catches what either method alone would miss.
 
-## Tech Stack
-- Python 3.10+
-- PyTorch, Transformers
-- Sentence-Transformers (dense retrieval)
-- BM25 implementation (sparse retrieval)
-- Qdrant (vector database)
-- FastAPI (API)
-- Pytest (testing)
-
-## Benchmarking Strategy
-
-Compare performance across:
-- Dense-only retrieval
-- Sparse-only retrieval (BM25)
-- Hybrid fusion
-- Different fusion strategies
-
-Metrics: nDCG, Recall@K, MRR, latency, cost
+### Fusion Strategies
+- **RRF (default)** — `1 / (k + rank)` — robust, doesn't require score normalization
+- **Weighted** — `α * dense + (1-α) * sparse` — tunable balance
+- **Simple** — deduplicates and prioritizes dense results
 
 ### Vector Indexing
 
-**Linear Search (Baseline)**
-- Brute force comparison
-- 100% accurate
-- O(n) complexity
-- Good for <10K vectors
+| Type | When to use | Complexity |
+|------|------------|------------|
+| Linear (baseline) | < 10K documents | O(n), 100% accurate |
+| HNSW | > 10K documents | O(log n), ~95% recall |
 
-**HNSW (Production)**
-- Graph-based approximate search
-- ~95% recall
-- O(log n) complexity
-- Good for millions of vectors
-- 100x+ faster than linear
+### Re-ranking
+Cross-encoder (`cross-encoder/ms-marco-MiniLM-L-6-v2`) jointly scores query + document pairs. Applied to top-50 candidates, returns top-10.
 
-**Performance:**
-- Linear: ~10ms for 10K vectors
-- HNSW: ~0.1ms for 1M vectors
+- Quality: +10-30% P@3
+- Latency: +50-100ms
+- Use when quality matters more than speed
 
-- ## Re-ranking Stage
+### Generation
+- LLM providers: OpenAI, Anthropic, or mock
+- Filters chunks below `min_score` threshold
+- Returns answer + source citations
 
-**Cross-Encoder Re-ranking:**
-- Uses `cross-encoder/ms-marco-MiniLM-L-6-v2`
-- Jointly encodes query + document (more accurate than bi-encoder)
-- Applied to top-50 candidates from hybrid retrieval
-- Returns top-10 after re-scoring
+---
 
-**Two-Stage Pipeline:**
-```
-Query → Hybrid Retrieval (50 candidates) → Cross-Encoder Re-rank (10 results)
-```
+## Tech Stack
 
-**Performance:**
-- Quality: 10-30% better P@3
-- Latency: +50-100ms overhead
-- Memory: Minimal (model loaded once)
-
-**When to use:**
-- Quality matters more than speed
-- Small result sets (top-10)
-- User-facing search (better UX)
-
-**When to skip:**
-- High-throughput scenarios
-- Large result sets (top-100+)
-- Latency-critical applications
-
-## Answer Generation
-
-**LLM Integration:**
-- Support for OpenAI (GPT) and Anthropic (Claude)
-- Mock LLM for testing without API costs
-- Context-aware prompt construction
-- Source citation generation
-
-**RAG Generator:**
-- Combines retrieval with generation
-- Filters low-relevance chunks (min_score threshold)
-- Limits context to top-k most relevant
-- Returns structured response with sources
-
-**Complete Flow:**
-```
-User Question
-    ↓
-Hybrid Retrieval (dense + sparse + fusion)
-    ↓
-Optional Re-ranking (cross-encoder)
-    ↓
-Context Assembly (top-k chunks)
-    ↓
-Prompt Construction (question + context)
-    ↓
-LLM Generation
-    ↓
-Answer + Sources
-```
-
-**Implementation Complete:**
-All core RAG components functional. System can answer questions using document knowledge base.
+Python 3.9+, PyTorch, Sentence Transformers, hnswlib, FastAPI, Pydantic, Docker
