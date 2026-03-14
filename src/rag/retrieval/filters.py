@@ -38,7 +38,7 @@ class ResultFilter:
     def by_metadata(
         results: List[RetrievalResult],
         key: str,
-        value: any
+        value: Any
     ) -> List[RetrievalResult]:
         """
         Filter by metadata field.
