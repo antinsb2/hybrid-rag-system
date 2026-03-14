@@ -169,7 +169,7 @@ class ResultRanker:
     def boost_by_metadata(
         results: List[RetrievalResult],
         key: str,
-        boost_value: any,
+        boost_value: Any,
         boost_factor: float = 1.2
     ) -> List[RetrievalResult]:
         """
