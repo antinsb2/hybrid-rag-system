@@ -70,10 +70,12 @@ class ResultFilter:
         """
         return [r for r in results if r.metadata.get('source') in sources]
     
+    DEFAULT_DEDUP_THRESHOLD = 0.95  # Trigram Jaccard similarity threshold for near-duplicates
+
     @staticmethod
     def deduplicate(
         results: List[RetrievalResult],
-        similarity_threshold: float = 0.95
+        similarity_threshold: float = DEFAULT_DEDUP_THRESHOLD
     ) -> List[RetrievalResult]:
         """
         Remove near-duplicate results.
