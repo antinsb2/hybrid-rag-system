@@ -34,11 +34,13 @@ class ReciprocalRankFusion(FusionStrategy):
     of document d in result list i.
     """
     
+    DEFAULT_K = 60  # Standard RRF constant from the original paper
+
     @staticmethod
     def fuse(
         dense_results: List[RetrievalResult],
         sparse_results: List[RetrievalResult],
-        k: int = 60
+        k: int = DEFAULT_K
     ) -> List[RetrievalResult]:
         """
         Combine using RRF.
