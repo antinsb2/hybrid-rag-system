@@ -219,7 +219,7 @@ class ResultRanker:
                     # Boost if less than 30 days old
                     if days_old < 30:
                         result.score *= boost_factor
-                except:
+                except (ValueError, TypeError):
                     pass
         
         return ResultRanker.by_score(results)
