@@ -2,7 +2,7 @@
 Filtering and post-processing for retrieval results.
 """
 
-from typing import List, Callable, Optional
+from typing import Any, List, Callable, Optional
 from datetime import datetime
 
 import sys
